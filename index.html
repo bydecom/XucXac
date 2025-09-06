@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quay Xúc Xắc</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .screen-container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .screen {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Ẩn màn hình không hoạt động */
+        .screen:not(.active) {
+            display: none;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        .screen-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .indicator-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .indicator-dot.active {
+            background: white;
+            transform: scale(1.2);
+        }
+
+        .fortune-section {
+            margin: 30px 0;
+        }
+
+        .fortune-button {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            color: white;
+            border: none;
+            padding: 25px 50px;
+            font-size: 1.8em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin: 20px;
+        }
+
+        .fortune-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .fortune-result {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 2px solid #e9ecef;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .fortune-text {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .fortune-description {
+            font-size: 1.1em;
+            color: #666;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .input-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .input-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .input-group label {
+            font-size: 1.2em;
+            color: #555;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .input-group input {
+            width: 80px;
+            height: 60px;
+            font-size: 2em;
+            text-align: center;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .roll-button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .roll-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .roll-button:active {
+            transform: translateY(0);
+        }
+
+        .dice-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            gap: 20px;
+        }
+
+        .dice-group {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            min-height: 120px;
+        }
+
+        .dice {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border: 3px solid #333;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .dice.rolling {
+            animation: roll 0.1s ease-in-out infinite;
+        }
+
+        @keyframes roll {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .total-section {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .total-group {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .total-group h3 {
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .total-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .total-group.left .total-value {
+            color: #e74c3c;
+        }
+
+        .total-group.right .total-value {
+            color: #3498db;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .input-section {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .dice-container {
+                flex-direction: column;
+                gap: 30px;
+            }
+            
+            .total-section {
+                flex-direction: column;
+            }
+
+            .screen-container {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="screen-container" id="screenContainer">
+        <!-- Màn hình chính: Quay Xúc Xắc -->
+        <div class="screen active" id="screen1">
+            <div class="container">
+                <h1>⚔️ Giao Tranh ⚔️</h1>
+                
+                <div class="input-section">
+                    <div class="input-group">
+                        <label for="leftDice">Số xúc xắc trái</label>
+                        <input type="number" id="leftDice" min="1" max="10" value="3">
+                    </div>
+                    
+                    <button class="roll-button" onclick="rollDice()">QUAY</button>
+                    
+                    <div class="input-group">
+                        <label for="rightDice">Số xúc xắc phải</label>
+                        <input type="number" id="rightDice" min="1" max="10" value="4">
+                    </div>
+                </div>
+
+                <div class="dice-container">
+                    <div class="dice-group" id="leftDiceGroup">
+                        <!-- Xúc xắc trái sẽ được tạo ở đây -->
+                    </div>
+                    
+                    <div class="dice-group" id="rightDiceGroup">
+                        <!-- Xúc xắc phải sẽ được tạo ở đây -->
+                    </div>
+                </div>
+
+                <div class="total-section">
+                    <div class="total-group left">
+                        <h3>Tổng trái</h3>
+                        <div class="total-value" id="leftTotal">0</div>
+                    </div>
+                    
+                    <div class="total-group right">
+                        <h3>Tổng phải</h3>
+                        <div class="total-value" id="rightTotal">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Màn hình 2: Chọn đất -->
+        <div class="screen" id="screen2">
+            <div class="container">
+                <h1>🏞️ Chọn Đất 🏞️</h1>
+                
+                <div class="input-section" style="justify-content: center;">
+                    <button class="roll-button" onclick="rollLandDice()">QUAY ĐẤT</button>
+                </div>
+
+                <div class="dice-container">
+                    <div class="dice-group" id="landDiceGroup">
+                        <!-- Xúc xắc đất sẽ được tạo ở đây -->
+                    </div>
+                </div>
+
+                <div class="total-section">
+                    <div class="total-group" style="flex: 1; max-width: 300px; margin: 0 auto;">
+                        <div class="total-value" id="landTotal">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Màn hình 3: Kỳ ngộ -->
+        <div class="screen" id="screen3">
+            <div class="container">
+                <h1>🔮 Kỳ Ngộ 🔮</h1>
+                
+                <div class="fortune-section">
+                    <button class="fortune-button" onclick="rollFortune()">
+                        🎲 ROLL KỲ NGỘ 🎲
+                    </button>
+                    
+                    <div class="fortune-result" id="fortuneResult">
+                        <div class="fortune-text">Nhấn nút để khám phá vận mệnh của bạn!</div>
+                        <div class="fortune-description">Mỗi lần roll sẽ cho bạn một lời tiên tri ngẫu nhiên</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chỉ báo màn hình -->
+    <div class="screen-indicator">
+        <div class="indicator-dot active" onclick="switchScreen(0)"></div>
+        <div class="indicator-dot" onclick="switchScreen(1)"></div>
+        <div class="indicator-dot" onclick="switchScreen(2)"></div>
+    </div>
+
+    <script>
+        function rollDice() {
+            const leftCount = parseInt(document.getElementById('leftDice').value);
+            const rightCount = parseInt(document.getElementById('rightDice').value);
+            
+            // Xóa xúc xắc cũ
+            document.getElementById('leftDiceGroup').innerHTML = '';
+            document.getElementById('rightDiceGroup').innerHTML = '';
+            
+            // Tạo xúc xắc mới
+            createDice('leftDiceGroup', leftCount);
+            createDice('rightDiceGroup', rightCount);
+            
+            // Bắt đầu hiển thị số ngẫu nhiên
+            const allDice = document.querySelectorAll('.dice');
+            allDice.forEach(dice => {
+                dice.classList.add('rolling');
+            });
+            
+            // Hiển thị số ngẫu nhiên liên tục
+            let rollCount = 0;
+            const maxRolls = 20; // Số lần thay đổi số
+            const rollInterval = setInterval(() => {
+                allDice.forEach(dice => {
+                    const randomValue = Math.floor(Math.random() * 6) + 1;
+                    dice.textContent = randomValue;
+                });
+                
+                rollCount++;
+                if (rollCount >= maxRolls) {
+                    clearInterval(rollInterval);
+                    allDice.forEach(dice => {
+                        dice.classList.remove('rolling');
+                    });
+                    
+                    // Tính tổng và hiển thị kết quả cuối cùng
+                    calculateAndShowTotals();
+                }
+            }, 100); // Thay đổi mỗi 100ms
+        }
+        
+        function createDice(containerId, count) {
+            const container = document.getElementById(containerId);
+            
+            for (let i = 0; i < count; i++) {
+                const dice = document.createElement('div');
+                dice.className = 'dice';
+                dice.textContent = '?'; // Hiển thị dấu ? ban đầu
+                container.appendChild(dice);
+            }
+        }
+        
+        function showDiceValue(dice, value) {
+            dice.textContent = value; // Hiển thị số trực tiếp
+        }
+
+        function calculateAndShowTotals() {
+            const leftDice = document.querySelectorAll('#leftDiceGroup .dice');
+            const rightDice = document.querySelectorAll('#rightDiceGroup .dice');
+            
+            let leftTotal = 0;
+            let rightTotal = 0;
+            
+            // Tính tổng trái (lấy giá trị cuối cùng đã hiển thị)
+            leftDice.forEach(dice => {
+                const value = parseInt(dice.textContent);
+                leftTotal += value;
+            });
+            
+            // Tính tổng phải (lấy giá trị cuối cùng đã hiển thị)
+            rightDice.forEach(dice => {
+                const value = parseInt(dice.textContent);
+                rightTotal += value;
+            });
+            
+            // Hiển thị tổng
+            document.getElementById('leftTotal').textContent = leftTotal;
+            document.getElementById('rightTotal').textContent = rightTotal;
+        }
+
+        function rollLandDice() {
+            const landCount = 3; // Cố định 3 xúc xắc
+            
+            // Xóa xúc xắc cũ
+            document.getElementById('landDiceGroup').innerHTML = '';
+            
+            // Tạo xúc xắc mới
+            createDice('landDiceGroup', landCount);
+            
+            // Bắt đầu hiển thị số ngẫu nhiên
+            const allDice = document.querySelectorAll('#landDiceGroup .dice');
+            allDice.forEach(dice => {
+                dice.classList.add('rolling');
+            });
+            
+            // Hiển thị số ngẫu nhiên liên tục
+            let rollCount = 0;
+            const maxRolls = 20; // Số lần thay đổi số
+            const rollInterval = setInterval(() => {
+                allDice.forEach(dice => {
+                    const randomValue = Math.floor(Math.random() * 6) + 1;
+                    dice.textContent = randomValue;
+                });
+                
+                rollCount++;
+                if (rollCount >= maxRolls) {
+                    clearInterval(rollInterval);
+                    allDice.forEach(dice => {
+                        dice.classList.remove('rolling');
+                    });
+                    
+                    // Tính tổng và hiển thị kết quả cuối cùng
+                    calculateAndShowLandTotal();
+                }
+            }, 100); // Thay đổi mỗi 100ms
+        }
+
+        function calculateAndShowLandTotal() {
+            const landDice = document.querySelectorAll('#landDiceGroup .dice');
+            
+            let landTotal = 0;
+            
+            // Tính tổng đất (lấy giá trị cuối cùng đã hiển thị)
+            landDice.forEach(dice => {
+                const value = parseInt(dice.textContent);
+                landTotal += value;
+            });
+            
+            // Hiển thị tổng
+            document.getElementById('landTotal').textContent = landTotal;
+        }
+        
+        // Chuyển màn hình
+        let currentScreen = 0; // Bắt đầu ở màn hình giao tranh
+        
+        function switchScreen(screenIndex) {
+            const screens = document.querySelectorAll('.screen');
+            const indicators = document.querySelectorAll('.indicator-dot');
+            
+            currentScreen = screenIndex;
+            
+            // Ẩn tất cả màn hình
+            screens.forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Hiển thị màn hình được chọn
+            screens[screenIndex].classList.add('active');
+            
+            // Cập nhật chỉ báo
+            indicators.forEach((indicator, index) => {
+                indicator.classList.toggle('active', index === screenIndex);
+            });
+        }
+
+        // Roll kỳ ngộ
+        function rollFortune() {
+            const fortunes = [
+                // Hiệu ứng ít gặp (tỉ lệ thấp)
+                {
+                    text: "🎲 Thêm quân ngẫu nhiên!",
+                    description: "Một quân mới xuất hiện ở ô ngẫu nhiên trên bàn cờ!",
+                    effect: "add_random_piece"
+                },
+                {
+                    text: "🃏 Thêm quân trên tay!",
+                    description: "Bạn nhận được thêm 1 quân trong tay để sử dụng!",
+                    effect: "add_hand_piece"
+                },
+                
+                // Hiệu ứng thường gặp (tỉ lệ cao) - di chuyển và thêm quân
+                {
+                    text: "⚡ Di chuyển quân 1 ô!",
+                    description: "Bạn có thể di chuyển một quân bất kỳ 1 ô theo hướng mong muốn!",
+                    effect: "move_piece_1"
+                },
+                {
+                    text: "🚀 Di chuyển quân 1 ô!",
+                    description: "Năng lượng di chuyển! Một quân có thể di chuyển 1 ô!",
+                    effect: "move_piece_1"
+                },
+                {
+                    text: "💫 Di chuyển quân 1 ô!",
+                    description: "Sức mạnh kỳ ngộ cho phép di chuyển quân 1 ô!",
+                    effect: "move_piece_1"
+                },
+                {
+                    text: "🎯 Thêm quân vào ô này!",
+                    description: "Một quân mới được đặt vào ô hiện tại!",
+                    effect: "add_piece_current"
+                },
+                {
+                    text: "⭐ Thêm quân vào ô này!",
+                    description: "Năng lượng tập trung tạo ra quân mới tại vị trí này!",
+                    effect: "add_piece_current"
+                },
+                {
+                    text: "🔥 Thêm quân vào ô này!",
+                    description: "Sức mạnh bùng nổ tạo ra quân mới ngay tại đây!",
+                    effect: "add_piece_current"
+                },
+                {
+                    text: "⚔️ Di chuyển quân 1 ô!",
+                    description: "Chiến thuật cho phép di chuyển quân 1 ô!",
+                    effect: "move_piece_1"
+                },
+                {
+                    text: "🏰 Thêm quân vào ô này!",
+                    description: "Xây dựng thành trì - thêm quân vào ô hiện tại!",
+                    effect: "add_piece_current"
+                }
+            ];
+
+            const resultDiv = document.getElementById('fortuneResult');
+            const randomFortune = fortunes[Math.floor(Math.random() * fortunes.length)];
+            
+            // Hiệu ứng loading
+            resultDiv.innerHTML = '<div class="fortune-text">🔮 Đang khám phá vận mệnh...</div>';
+            
+            setTimeout(() => {
+                resultDiv.innerHTML = `
+                    <div class="fortune-text">${randomFortune.text}</div>
+                    <div class="fortune-description" style="font-size: 1.3em; font-weight: bold; color: #333; line-height: 1.4;">${randomFortune.description}</div>
+                `;
+            }, 1500);
+        }
+
+        // Thêm sự kiện kéo màn hình
+        let startX = 0;
+        let isDragging = false;
+
+        document.getElementById('screenContainer').addEventListener('mousedown', (e) => {
+            startX = e.clientX;
+            isDragging = true;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            const endX = e.clientX;
+            const diffX = startX - endX;
+            
+            if (Math.abs(diffX) > 50) { // Ngưỡng kéo tối thiểu
+                if (diffX > 0 && currentScreen < 2) {
+                    switchScreen(currentScreen + 1);
+                } else if (diffX < 0 && currentScreen > 0) {
+                    switchScreen(currentScreen - 1);
+                }
+            }
+        });
+
+        // Thêm sự kiện touch cho mobile
+        document.getElementById('screenContainer').addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+        });
+
+        document.addEventListener('touchend', (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            const endX = e.changedTouches[0].clientX;
+            const diffX = startX - endX;
+            
+            if (Math.abs(diffX) > 50) {
+                if (diffX > 0 && currentScreen < 2) {
+                    switchScreen(currentScreen + 1);
+                } else if (diffX < 0 && currentScreen > 0) {
+                    switchScreen(currentScreen - 1);
+                }
+            }
+        });
+
+        // Khởi tạo ban đầu - chỉ tạo xúc xắc mà không quay
+        window.onload = function() {
+            const leftCount = parseInt(document.getElementById('leftDice').value);
+            const rightCount = parseInt(document.getElementById('rightDice').value);
+            const landCount = 3; // Cố định 3 xúc xắc cho phần chọn đất
+            
+            // Tạo xúc xắc ban đầu với tất cả chấm hiển thị (dấu ?)
+            createDice('leftDiceGroup', leftCount);
+            createDice('rightDiceGroup', rightCount);
+            createDice('landDiceGroup', landCount);
+            
+            // Hiển thị tổng = 0
+            document.getElementById('leftTotal').textContent = '0';
+            document.getElementById('rightTotal').textContent = '0';
+            document.getElementById('landTotal').textContent = '0';
+        };
+    </script>
+</body>
+</html>
